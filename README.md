@@ -113,6 +113,43 @@ hermes -p qa -s verification-before-completion -q "确保所有测试通过"
 | `references/api-mock.md` | Mock服务器：FastAPI动态路由、场景管理 | 1335 |
 | `references/run-tests-after-changes.md` | Git Hooks：编辑后自动测试 | 28 |
 
+## 同步到 Hermes
+
+### 安装 Skill 文件到 Hermes Profile
+
+```bash
+# 进入仓库目录
+cd /home/gql/repos/qa-ext-skill
+
+# 执行同步脚本
+bash sync-to-hermes.sh qa
+```
+
+同步后目录结构：
+```
+~/.hermes/profiles/qa/skills/
+├── qa-ext-skill/                    # 路由器
+│   ├── SKILL.md
+│   └── references/
+├── bmad-qa/                        # 独立 skill（软链接）
+│   └── SKILL.md → qa-ext-skill/references/bmad-qa.md
+├── webapp-testing/                 # 独立 skill（软链接）
+│   └── SKILL.md → qa-ext-skill/references/webapp-testing.md
+└── ...                             # 其他 skills
+```
+
+### 验证安装
+
+```bash
+# 查看已安装的 skills
+ls -la ~/.hermes/profiles/qa/skills/
+
+# 验证软链接
+readlink -f ~/.hermes/profiles/qa/skills/bmad-qa/SKILL.md
+```
+
+---
+
 ## 目录结构
 
 ```
