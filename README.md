@@ -1,8 +1,10 @@
 # QA Ext Skill
 
-[![MIT License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-1.0.0-green.svg)](SKILL.md)
-[![QA Skills](https://img.shields.io/badge/Skills-10-orange.svg)](references/)
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Platforms](https://img.shields.io/badge/platforms-hermes-blue.svg)](#)
+[![Version](https://img.shields.io/badge/version-1.0.0-green.svg)](SKILL.md)
+[![Skills](https://img.shields.io/badge/skills-10-orange.svg)](references/)
+[![Category](https://img.shields.io/badge/category-gql--bots-blue.svg)](#)
 
 > QA 角色技能索引仓库 - 智能推荐合适的测试 skill
 
@@ -16,7 +18,7 @@
 
 ```bash
 # 克隆仓库
-git clone https://github.com/gql-tseng/qa-ext-skill.git
+git clone https://github.com/relunctance/qa-ext-skill.git
 
 # 查看可用 skills
 cat SKILL.md
