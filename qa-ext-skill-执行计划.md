@@ -49,7 +49,7 @@ gh repo view gql-tseng/qa-ext-skill 2>/dev/null && echo "EXISTS" || echo "NOT_EX
 cp /home/gql/repos/gql-bots/shared/profile_role_skill.md /tmp/profile_role_skill.md
 ```
 
-**QA 角色 skill 列表（从 profile_role_skill.md）**：
+**QA 角色 skill 列表（来源：`/home/gql/repos/gql-bots/shared/profile_role_skill.md`）**：
 
 | Skill | 路径 | 级别 |
 |-------|------|------|
@@ -114,7 +114,7 @@ cat /home/gql/repos/gql-bots/docs/roles_skill/qa_update.md
 cat /home/gql/repos/gql-bots/shared/skills-catalog.md
 ```
 
-**QA 技能地图**：
+**QA 技能地图（来源：`/home/gql/repos/gql-bots/shared/skills-catalog.md`）**：
 
 | 场景 | 推荐 Skill | 理由 |
 |------|-----------|------|
@@ -206,11 +206,11 @@ hermes:
 
 ## 技能地图
 
-[详细内容来自 skills-catalog.md]
+详细内容来自 `/home/gql/repos/gql-bots/shared/skills-catalog.md` 的「QA 技能地图」章节
 
 ## 工作流
 
-[详细内容来自 qa_update.md]
+详细内容来自 `/home/gql/repos/gql-bots/docs/roles_skill/qa_update.md`
 
 ## References
 
@@ -281,8 +281,8 @@ cat > /home/gql/repos/qa-ext-skill/update_readme.md << 'EOF'
 ## 何时升级
 
 1. `codebuddy-plugins-official.zip` 更新时
-2. gql-bots 的 `profile_role_skill.md` 变化时
-3. skills-catalog.md 更新时
+2. `gql-bots/shared/profile_role_skill.md` 变化时
+3. `gql-bots/shared/skills-catalog.md` 更新时
 
 ## 升级步骤
 
