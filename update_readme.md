@@ -1,5 +1,9 @@
 # QA Ext Skill 升级方案
 
+## 执行计划
+
+详见 `qa-ext-skill-执行计划.md`（详细步骤说明）
+
 ## 何时升级
 
 1. `codebuddy-plugins-official.zip` 更新时

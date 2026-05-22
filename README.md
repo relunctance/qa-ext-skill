@@ -72,6 +72,7 @@ qa-ext-skill/
 ├── SKILL.md              # 技能索引
 ├── README.md             # 本文件
 ├── LICENSE               # MIT License
+├── qa-ext-skill-执行计划.md  # 详细执行计划
 ├── update_readme.md      # 升级方案
 ├── learns/               # 踩坑记录
 │   └── README.md
@@ -84,6 +85,8 @@ qa-ext-skill/
 ## 升级
 
 详见 [update_readme.md](update_readme.md)
+
+详细执行计划见 [qa-ext-skill-执行计划.md](qa-ext-skill-执行计划.md)
 
 ## 作者
 
