@@ -1,3 +1,4 @@
+<!-- TL;DR: API文档：OpenAPI 3.1+验证、Swagger UI、SDK生成 -->
 ---
 name: api-documenter
 description: Master API documentation with OpenAPI 3.1, AI-powered tools, and modern developer experience practices. Create interactive docs, generate SDKs, and build comprehensive developer portals. Use PROACTIVELY for API documentation or developer portal creation.

@@ -1,3 +1,4 @@
+<!-- TL;DR: Playwright Python E2E：服务器管理、networkidle等待、动态Web决策树 -->
 ---
 name: webapp-testing
 description: Toolkit for interacting with and testing local web applications using Playwright. Supports verifying frontend functionality, debugging UI behavior, capturing browser screenshots, and viewing browser logs.

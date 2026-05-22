@@ -1,3 +1,4 @@
+<!-- TL;DR: Git Hooks：代码编辑后自动运行测试 -->
 ---
 name: run-tests-after-changes
 description: Automatically run quick tests after code modifications to ensure nothing breaks

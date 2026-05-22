@@ -1,3 +1,4 @@
+<!-- TL;DR: 测试自动化：TDD红绿重构、AI自愈测试、CI/CD集成、混沌工程 -->
 ---
 name: test-automator
 description: Master AI-powered test automation with modern frameworks, self-healing tests, and comprehensive quality engineering. Build scalable testing strategies with advanced CI/CD integration. Use PROACTIVELY for testing automation or quality assurance.

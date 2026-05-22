@@ -1,3 +1,4 @@
+<!-- TL;DR: QA评审核心：Sprint测试评审、缺陷报告、测试报告模板 -->
 ---
 name: bmad-qa
 description: Automated QA Engineer agent for comprehensive testing based on requirements and implementation

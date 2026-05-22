@@ -1,3 +1,4 @@
+<!-- TL;DR: 自动测试：代码修改后触发、PostToolUse事件 -->
 ---
 name: test-runner
 description: Automatically run relevant tests after code changes
