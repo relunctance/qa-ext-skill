@@ -1,12 +1,11 @@
 # QA Ext Skill 创建执行计划
 
 ## 目标
-
-基于 `profile_role_skill.md` 和 `skills-catalog.md`，创建智能技能路由器仓库 `qa-ext-skill`，包含：
-- ✅ 智能索引推荐功能（决策树 + 触发关键词 + 快速参考表）
-- ✅ 所有 QA skill 的 references（含 TL;DR 摘要）
-- ✅ 升级方案
-- ✅ learns 踩坑记录
+基于 `profile_role_skill.md` 和 `skills-catalog.md`，创建 `qa-ext-skill` GitHub 仓库，包含：
+- 智能索引推荐功能
+- 所有 QA skill 的 references
+- 升级方案
+- learns 踩坑记录
 
 ---
 
@@ -36,7 +35,7 @@ ls /home/gql/tmp/codebuddy-skills/
 
 ```bash
 # 检查是否已存在
-gh repo view relunctance/qa-ext-skill 2>/dev/null && echo "EXISTS" || echo "NOT_EXISTS"
+gh repo view gql-tseng/qa-ext-skill 2>/dev/null && echo "EXISTS" || echo "NOT_EXISTS"
 ```
 
 - **如果不存在**：使用 `skill-created` 创建
@@ -50,7 +49,7 @@ gh repo view relunctance/qa-ext-skill 2>/dev/null && echo "EXISTS" || echo "NOT_
 cp /home/gql/repos/gql-bots/shared/profile_role_skill.md /tmp/profile_role_skill.md
 ```
 
-**QA 角色 skill 列表（来源：`/home/gql/repos/gql-bots/shared/profile_role_skill.md`）**：
+**QA 角色 skill 列表（从 profile_role_skill.md）**：
 
 | Skill | 路径 | 级别 |
 |-------|------|------|
@@ -115,7 +114,7 @@ cat /home/gql/repos/gql-bots/docs/roles_skill/qa_update.md
 cat /home/gql/repos/gql-bots/shared/skills-catalog.md
 ```
 
-**QA 技能地图（来源：`/home/gql/repos/gql-bots/shared/skills-catalog.md`）**：
+**QA 技能地图**：
 
 | 场景 | 推荐 Skill | 理由 |
 |------|-----------|------|
@@ -130,22 +129,39 @@ cat /home/gql/repos/gql-bots/shared/skills-catalog.md
 | 前后端并行开发 | api-mock | 前后端并行开发 |
 | 代码变更测试 | run-tests-after-changes | 代码变更测试 |
 
+**QA 工作流**：
+
+```
+接到测试任务
+  │
+  ├─→ bmad-qa → 执行 QA 评审规范
+  │
+  ├─→ verification-before-completion → 完成任务前必须验证
+  │
+  ├─→ webapp-testing → Web 功能测试
+  │     └─→ playwright-cli → 快速调试
+  │
+  ├─→ test-automator → 测试自动化
+  │     ├─→ write-tests → 编写测试
+  │     └─→ tdd → TDD 流程
+  │
+  └─→ performance-engineer → 性能测试
+```
+
 ---
 
-## Step 7: 创建 qa-ext-skill 仓库
+## Step 7: 创建/更新 qa-ext-skill 仓库
+
+**注意**：qa-ext-skill 已创建（https://gitee.com/ztanfo_admin/qa-ext-skill），只需更新内容即可。
 
 **目录结构**：
 
 ```
 qa-ext-skill/
-├── SKILL.md                   # 智能路由器（核心）
-├── README.md                  # 仓库说明
-├── LICENSE                   # MIT
-├── update_readme.md          # 升级方案
-├── qa-ext-skill-执行计划.md  # 执行计划
-├── learns/                   # 踩坑记录
-│   └── README.md
-└── references/               # skill 文件副本（含TL;DR）
+├── SKILL.md              # 技能索引（智能推荐）
+├── README.md             # 仓库说明
+├── update_readme.md     # 升级方案
+└── references/          # skill 文件副本
     ├── bmad-qa.md
     ├── webapp-testing.md
     ├── verification-before-completion.md
@@ -158,17 +174,15 @@ qa-ext-skill/
     └── run-tests-after-changes.md
 ```
 
-### 7.1 SKILL.md 设计要点（超级重要）
-
-**必须包含**：
+**SKILL.md 结构**：
 
 ```markdown
 ---
 name: qa-ext-skill
 description: QA 技能索引路由器 - 接收任何 QA 任务，智能推荐最合适的 skill 并执行
-version: 2.0.0  # 重大更新
+version: 2.0.0
 hermes:
-  auto_route: true  # 启用自动路由
+  auto_route: true
 ---
 
 # QA Ext Skill - 智能技能路由器
@@ -192,16 +206,56 @@ hermes:
 ...
 ```
 
-## 🔀 智能路由决策树
+## 🗣️ 自然语言触发示例（引用）
+
+**详细示例** → 见 `references/quick-reference.md`
 
 ```
-收到 QA 任务
-    │
-    ├─ 包含 "Web" / "E2E" / "页面"
-    │   └─→ webapp-testing + playwright-cli
-    │
-    ...
+用户："帮我测试下 contact 区块能打开吗"
+路由：webapp-testing
+
+用户："页面打不开，帮我看下"
+路由：playwright-cli
 ```
+
+## ❓ Fallback 处理
+
+**当任务无法匹配任何规则时**：
+
+```markdown
+1. 询问用户澄清：
+   "这个任务是 Web 测试、API 测试、还是其他？"
+
+2. 如果用户无法描述：
+   → bmad-qa（让 QA 核心帮你判断）
+```
+
+## 🔗 任务组合流
+
+**详细组合** → 见 `references/quick-reference.md`
+
+```
+组合 1: Web 完整测试
+  webapp-testing（E2E）
+    └─ verification-before-completion（完成验证）
+
+组合 2: API 调试 + Mock
+  api-documenter（检查文档）
+    └─ api-mock（Mock 接口）
+```
+
+## 🔗 与 gql-qa 主 skill 联动
+
+当 QA 角色加载 `qa-ext-skill` 时：
+
+```markdown
+1. 收到 QA 任务
+2. 先加载 qa-ext-skill（路由器）
+3. 根据任务路由到具体 skill
+4. 执行完成后返回 bmad-qa 做评审
+```
+
+**注意**：`qa-ext-skill` 不会覆盖 `gql-qa` 主 skill，它们协同工作。
 
 ## 📋 技能地图
 
@@ -211,28 +265,12 @@ hermes:
 
 ## 🎯 场景化深度参考
 
-### 场景 1: Web E2E 测试
-...
+### 详细参考（引用）
+
+**自然语言示例 + Fallback + 组合流** → 见 `references/quick-reference.md`
 ```
 
-### 7.2 references 添加 TL;DR
-
-```bash
-# 每个 reference 文件第一行添加 TL;DR
-for f in references/*.md; do
-  case "$f" in
-    bmad-qa.md)
-      echo "<!-- TL;DR: QA评审核心：Sprint测试评审、缺陷报告 -->" | cat - "$f" > temp && mv temp "$f"
-      ;;
-    webapp-testing.md)
-      echo "<!-- TL;DR: Playwright Python E2E：服务器管理 -->" | cat - "$f" > temp && mv temp "$f"
-      ;;
-    ...
-  esac
-done
-```
-
-### 7.3 references 复制命令
+**references 复制命令**：
 
 ```bash
 BASE=/home/gql/tmp/codebuddy-skills/external_plugins
@@ -266,64 +304,42 @@ cp $BASE/hooks-testing/hooks/run-tests-after-changes.md $REFS/run-tests-after-ch
 mkdir -p /home/gql/repos/qa-ext-skill/learns
 ```
 
-**learns/README.md 模板**：
+**learns/01-qa路径确认.md**：
 
 ```markdown
-# QA Ext Skill 踩坑沉淀
+# QA Skill 路径踩坑记录
 
-## 🏷️ 按标签索引
+## 问题1: bmad-qa 路径
 
-## #路径确认
-
-### bmad-qa 路径
 - **现象**: profile_role_skill.md 中写的是 `plugins/agent-team-agile-workflow/agents/bmad-qa.md`
 - **实际位置**: `/home/gql/tmp/codebuddy-skills/plugins/agent-team-agile-workflow/agents/bmad-qa.md`
 - **原因**: profile_role_skill.md 的路径已经包含了 `plugins/` 前缀
 - **解决**: 拼接时注意不要重复加 `plugins/`
 
-## #source-区分
+## 问题2: playwright-cli 路径
 
-### external_plugins vs plugins
-- **问题**: skill 文件分布在两个目录
-- **规则**:
-  - `webapp-testing`, `superpowers/`, `unit-testing/`, `performance-testing-review/`, `api-testing-observability/`, `hooks-testing/` → `external_plugins/`
-  - `agent-team-agile-workflow/`, `playwright-cli/` → `plugins/`
-
-## #references-增强
-
-### TL;DR 标记
-- **目的**: 快速定位关键信息，AI 读取效率提升
-- **格式**: `<!-- TL;DR: 一句话描述 -->`
-- **位置**: 每个 reference 文件第一行
-
-## #智能路由
-
-### 触发条件设计
-- **auto_route**: true 标记启用自动路由
-- **触发关键词**: 覆盖常见任务描述（Web、API、性能等）
-- **决策树**: 清晰的 if-then 映射
+- **现象**: profile_role_skill.md 中写的是 `plugins/playwright-cli/skills/playwright-cli/SKILL.md`
+- **实际位置**: `/home/gql/tmp/codebuddy-skills/plugins/playwright-cli/skills/playwright-cli/SKILL.md`
+- **注意**: 有两个 `playwright-cli` 目录层级
 ```
 
 ---
 
 ## Step 9: 创建 update_readme.md 升级方案
 
-```markdown
+```bash
+cat > /home/gql/repos/qa-ext-skill/update_readme.md << 'EOF'
 # QA Ext Skill 升级方案
-
-## 执行计划
-
-详见 `qa-ext-skill-执行计划.md`（详细步骤说明）
 
 ## 何时升级
 
 1. `codebuddy-plugins-official.zip` 更新时
-2. `gql-bots/shared/profile_role_skill.md` 变化时
-3. `gql-bots/shared/skills-catalog.md` 更新时
+2. gql-bots 的 `profile_role_skill.md` 变化时
+3. skills-catalog.md 更新时
 
 ## 升级步骤
 
-### Step 1: 下载最新插件包
+### 1. 下载最新插件包
 
 ```bash
 curl -L https://download.codebuddy.cn/plugin-marketplace/codebuddy-plugins-official.zip \
@@ -331,30 +347,22 @@ curl -L https://download.codebuddy.cn/plugin-marketplace/codebuddy-plugins-offic
 unzip -o /tmp/codebuddy-plugins-official.zip -d /home/gql/tmp/codebuddy-skills
 ```
 
-### Step 2: 同步 references
+### 2. 同步 references
 
 ```bash
 BASE=/home/gql/tmp/codebuddy-skills/external_plugins
 PLUGINS=/home/gql/tmp/codebuddy-skills/plugins
 REFS=/home/gql/repos/qa-ext-skill/references
 
-# 复制所有 skill 文件
-# [同 Step 7.3 的复制命令]
+# 重新复制所有 skill 文件
+# [同 Step 7 的复制命令]
 ```
 
-### Step 3: 重新添加 TL;DR（如有需要）
+### 3. 更新 SKILL.md
 
-```bash
-# 检查并添加 TL;DR
-for f in references/*.md; do
-  if ! grep -q "^<!-- TL;DR" "$f"; then
-    # 添加 TL;DR
-    ...
-  fi
-done
-```
+如果 `skills-catalog.md` 更新，重新生成索引部分。
 
-### Step 4: 提交
+### 4. 提交
 
 ```bash
 cd /home/gql/repos/qa-ext-skill
@@ -365,53 +373,37 @@ git push origin main
 
 ## 版本号规则
 
-| 类型 | 规则 |
-|------|------|
-| 主版本 | skill 索引结构变化、决策树重构 |
-| 次版本 | 新增/删除 skill、触发关键词更新 |
-| 修订版 | 内容更新、TL;DR 更新 |
-
-## 路径速查
-
-| Skill | 源路径 |
-|-------|--------|
-| bmad-qa | `plugins/agent-team-agile-workflow/agents/bmad-qa.md` |
-| webapp-testing | `external_plugins/webapp-testing/SKILL.md` |
-| verification-before-completion | `external_plugins/superpowers/skills/verification-before-completion/SKILL.md` |
-| playwright-cli | `plugins/playwright-cli/skills/playwright-cli/SKILL.md` |
-| test-automator | `external_plugins/unit-testing/agents/test-automator.md` |
-| performance-engineer | `external_plugins/performance-testing-review/agents/performance-engineer.md` |
-| api-documenter | `external_plugins/api-testing-observability/agents/api-documenter.md` |
-| test-runner | `external_plugins/hooks-testing/hooks/test-runner.md` |
-| api-mock | `external_plugins/api-testing-observability/commands/api-mock.md` |
-| run-tests-after-changes | `external_plugins/hooks-testing/hooks/run-tests-after-changes.md` |
+- 主版本：skill 索引结构变化
+- 次版本：新增/删除 skill
+- 修订版：内容更新
+EOF
 ```
 
 ---
 
-## Step 10: 更新 README.md
+## Step 10: 验证 & 更新 README.md
 
 使用 `readme-skill` 美化 README，包含：
-- 5 个徽章（包括 auto_route）
-- 目录结构
-- 一句话路由规则
-- 决策树
-- TL;DR 索引表
+- 徽章
+- 目录
+- 使用说明
+- 工作流图
 
 ---
 
-## Step 11: Git 提交
+## Step 11: 后续行为
+
+- 美化 README（使用 readme-skill）
+- 更新 gql-skills（如需要）
+
+---
+
+## Step 12: 提交
 
 ```bash
 cd /home/gql/repos/qa-ext-skill
 git add -A
-git commit -m "feat: v2.0 - intelligent skill router with auto_route
-
-- 增强 SKILL.md: 决策树 + 触发关键词 + 快速参考表
-- references 添加 TL;DR 摘要
-- 场景化深度参考
-- 智能路由决策树
-- auto_route: true 启用自动路由"
+git commit -m "feat: initial qa-ext-skill with all QA skills"
 git push origin main
 ```
 
@@ -422,73 +414,9 @@ git push origin main
 - [ ] 下载解压成功
 - [ ] GitHub 仓库已创建/更新
 - [ ] 所有 10 个 skill 路径验证通过
-- [ ] references/ 包含所有 skill 文件（含 TL;DR）
-- [ ] SKILL.md 包含智能索引：
-  - [ ] 一句话触发规则
-  - [ ] 决策树
-  - [ ] 技能地图
-  - [ ] 场景化深度参考
-  - [ ] TL;DR 索引表
+- [ ] references/ 包含所有 skill 文件
+- [ ] SKILL.md 包含智能索引
 - [ ] learns/ 有踩坑记录
 - [ ] update_readme.md 有升级方案
 - [ ] README.md 已美化
-- [ ] auto_route: true 启用
 - [ ] git push 成功
-
----
-
-## 其他角色创建注意事项
-
-创建其他角色（arc-ext-skill / sm-ext-skill / coder-ext-skill / review-ext-skill / leader-ext-skill）时，参考以下模板：
-
-### 1. SKILL.md 必须包含
-
-```markdown
-## ⚡ 快速路由（必读）
-
-### 任务 → Skill 速查
-
-| 你的任务（说人话） | → 推荐 Skill | 直接调用 |
-|------------------|-------------|---------|
-| ... | ... | ... |
-
-### 一句话触发规则
-
-```
-任务包含...         → 直接路由到...
-```
-
-## 🔀 智能路由决策树
-
-```
-收到任务
-    │
-    ├─ 包含 "X"
-    │   └─→ skill-a + skill-b
-    │
-    ...
-```
-
-## 📋 技能地图
-
-| Skill | TL;DR | 级别 | 触发关键词 |
-|-------|-------|------|-----------|
-
-## 🎯 场景化深度参考
-
-### 场景 1: ...
-```
-
-### 2. references 添加 TL;DR
-
-```bash
-for f in references/*.md; do
-  if ! grep -q "^<!-- TL;DR" "$f"; then
-    echo "<!-- TL;DR: 一句话描述 -->" | cat - "$f" > temp && mv temp "$f"
-  fi
-done
-```
-
-### 3. 路径速查（更新 document 中的路径）
-
-确保 `update_readme.md` 中的路径速查表是最新的。
