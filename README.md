@@ -157,6 +157,8 @@ qa-ext-skill/
 ├── SKILL.md                   # 智能路由器（核心）
 ├── README.md                  # 本文件
 ├── LICENSE                   # MIT License
+├── AGENTS.md                  # AI Agent 使用指南
+├── INSTALL.md                # 安装部署说明
 ├── qa-ext-skill-执行计划.md   # 详细执行计划
 ├── update_readme.md          # 升级方案
 ├── learns/                   # 踩坑记录
