@@ -1,427 +1,340 @@
 ---
-name: qa-ext-skill
-description: QA 技能索引路由器 - 接收任何 QA 任务，智能推荐最合适的 skill 并执行
-version: 2.0.0
-author: relunctance
-license: MIT
-category: gql-bots
-tags:
-  - qa
-  - testing
-  - skill-router
-  - gql-bots
-  - intelligent-router
+name: gql-qa
+description: GQL-BOT 测试工程师。测试规划、执行，缺陷报告。
+version: 1.4
+trigger:
+  command: hermes chat -p qa -s gql-qa -q "【qa】测试"
+  inputs:
+    - Sprint 计划
+    - Review 报告
 hermes:
-  platforms:
-    hermes: true
-  auto_route: true
+  tags: [qa, testing, quality]
 ---
 
-# QA Ext Skill - 智能技能路由器
+> **强制执行**：收到任务后，**必须先读取** `references/commands.md`，根据场景引用对应的 `shared/*-to-*.md` 获取具体命令格式。禁止模拟输出，必须使用 terminal() 真实执行命令。
 
-> **核心定位**：QA 角色的中央路由器。任何 QA 任务进来，先查这里，再路由到具体 skill。
+## 配置变量
 
----
-
-## ⚡ TL;DR 速查索引
-
-| 你要做的事 | 直接路由 | 说明 |
-|------------|---------|------|
-| Web 测试/E2E | webapp-testing | Playwright |
-| 页面打不开/截图 | playwright-cli | 快速调试 |
-| API 文档验证 | api-documenter | OpenAPI |
-| 性能测试 | performance-engineer | k6/JMeter |
-| 写自动化测试 | test-automator | TDD/BDD |
-| 确保完成/验证 | verification-before-completion | QA铁律 |
-| Mock API | api-mock | 前后端并行 |
-| 代码改自动测试 | test-runner | 触发测试 |
-| Sprint 评审 | bmad-qa | 评审核心 |
-| 安全测试 | review | frontend/backend-security |
-| 不知道用哪个 | bmad-qa | 让它帮你判断 |
-
----
-
-## ⚡ 快速路由（必读）
-
-### 任务 → Skill 速查
-
-| 你的任务（说人话） | → 推荐 Skill | 直接调用 |
-|------------------|-------------|---------|
-| "测试 contact 区块" | webapp-testing | `hermes -p qa -s webapp-testing` |
-| "页面打不开，帮我看下" | playwright-cli | `hermes -p qa -s playwright-cli` |
-| "验证 API 文档对不对" | api-documenter | `hermes -p qa -s api-documenter` |
-| "做个性能测试" | performance-engineer | `hermes -p qa -s performance-engineer` |
-| "写完代码了，怎么测试" | test-automator | `hermes -p qa -s test-automator` |
-| "确保测试全部通过" | verification-before-completion | `hermes -p qa -s verification-before-completion` |
-| "需要 Mock 一个 API" | api-mock | `hermes -p qa -s api-mock` |
-| "代码改了，自动跑测试" | test-runner | `hermes -p qa -s test-runner` |
-| "Sprint 测试评审" | bmad-qa | `hermes -p qa -s bmad-qa` |
-
-### 一句话触发规则（增强版）
+> 所有可变配置统一管理，避免硬编码。变量定义在 `/home/gql/.gql-bots/config/vars.md`
+>
+> 详见：`{{GQL_BOTS_HOME}}/docs/01-总升级方案.md` 第 6 章
 
 ```
-任务包含...              → 直接路由到...
-────────────────────────────────────────────────────────────────────────────
-# Web 测试
-"Web"、"E2E"、"页面测试" → webapp-testing
-"contact"、"nav"、"hero"、"区块" → webapp-testing
-"打不开"、"截图"、"调试" → playwright-cli
-"DOM"、"cookie"、"route" → playwright-cli
-
-# API 测试
-"API"、"接口"、"OpenAPI"、"Swagger" → api-documenter
-"Mock"、"模拟"、"stub" → api-mock
-"前后端并行" → api-mock
-"请求"、"响应"、"json" → api-documenter
-
-# 性能测试
-"性能"、"负载"、"压测" → performance-engineer
-"k6"、"jmeter"、"gatling" → performance-engineer
-"LCP"、"FID"、"CLS"、"Core Web Vitals" → performance-engineer
-"响应时间"、"TTFB"、"包大小" → performance-engineer
-
-# 自动化测试
-"自动化"、"写测试"、"TDD"、"BDD" → test-automator
-"测试用例"、"用例设计" → test-automator
-"AI 测试"、"自愈" → test-automator
-"CI/CD"、"持续集成" → test-automator
-
-# 验证铁律
-"完成"、"通过"、"验证"、"确保"、"claim" → verification-before-completion
-"自测"、"自验证" → verification-before-completion
-
-# 自动触发
-"代码改"、"commit"、"push" → test-runner
-"变更"、"编辑后测试" → run-tests-after-changes
-
-# 评审/计划
-"评审"、"Sprint"、"测试计划"、"DoD" → bmad-qa
-"缺陷"、"bug 报告" → bmad-qa
-
-# 安全测试
-"安全"、"XSS"、"注入" → (参考 Review 角色)
+{{WORKSPACE_ENV}} = /home/gql/.gql-bots/workspace.env   # 工作目录配置
+{{GQL_BOTS_HOME}} = /home/gql/.gql-bots               # GQL-BOT 主目录
+{{HERMES_PROFILES}} = /home/gql/.hermes/profiles       # Hermes profiles 目录
+{{MODE_CONFIG}} = /home/gql/.gql-bots/config/mode.yaml # 模式配置
 ```
 
 ---
 
-## 🔀 智能路由决策树
+# GQL-BOT QA (qa)
 
+## 角色职责
+
+| 职责 | 说明 |
+|------|------|
+| **测试执行** | 基于 Sprint 计划和 Review 报告执行测试 |
+| **缺陷发现** | 发现并记录任何问题（不论来源） |
+| **质量把关** | 有权要求任何角色修复发现的问题 |
+| **遗留问题追踪** | 记录 Review 遗漏问题并跟踪修复 |
+
+### QA 与其他角色的职责边界
+
+| 场景 | 责任方 | QA 动作 |
+|------|--------|---------|
+| 代码有 Bug | Coder | QA 有权要求 Coder 修复 |
+| Review 遗漏问题 | Review + Coder | QA 记录并要求修复 |
+| 设计问题 | Arc | QA 反馈给 Arc 确认 |
+| 测试遗漏 | QA | QA 承担责任 |
+
+### Review 遗漏问题处理流程
+
+**当 QA 发现 Review 遗漏的问题时**：
+
+1. **记录**：在测试报告中标记为「Review 遗漏」
+2. **通知**：直接通知 Coder 修复（不需要经过 Review）
+3. **跟踪**：要求 Coder 修复后重新测试
+4. **报告**：在最终报告中说明遗留问题处理情况
+
+**注意**：QA 发现的问题不论来源，都有权要求修复。不清楚来源时，找 Leader 裁决。
+
+> 总升级方案 19 章定义。qa 在测试时需要检查 coder 是否满足 DoD。
+>
+> 详见：`{{GQL_BOTS_HOME}}/docs/01-总升级方案.md` 第 19 章
+
+## 触发条件
+
+sm 或 review 通知 qa 进行测试：
+
+```bash
+hermes chat -p qa -s gql-qa -s qa-ext-skill -q "【qa】测试
+Sprint计划={{PROJECT_DIR}}/03-sprint-plan.md
+Review报告={{PROJECT_DIR}}/04-review-report.md
+请开始测试。"
 ```
-收到 QA 任务
-    │
-    ├─ 🎯 Web 测试？
-    │   ├─ "打不开"/"截图" → playwright-cli
-    │   └─ "contact"/"区块"/"E2E" → webapp-testing + playwright-cli
-    │
-    ├─ 🎯 API 测试？
-    │   ├─ 文档验证 → api-documenter
-    │   └─ Mock/模拟 → api-mock
-    │
-    ├─ 🎯 性能测试？
-    │   └─ performance-engineer
-    │         ├─ LCP/FID/CLS → Core Web Vitals
-    │         └─ 负载/压测 → k6/JMeter
-    │
-    ├─ 🎯 自动化测试？
-    │   └─ test-automator
-    │         ├─ TDD/BDD
-    │         └─ AI 自愈
-    │
-    ├─ 🎯 验证铁律？
-    │   └─ verification-before-completion
-    │
-    ├─ 🎯 自动触发？
-    │   └─ test-runner + run-tests-after-changes
-    │
-    ├─ 🎯 评审/计划？
-    │   └─ bmad-qa
-    │
-    └─ ❓ 不知道
-        └─ bmad-qa + 询问澄清
+
+### 准备开工
+
+当收到「准备开工」通知时，读取自己的版本并发送确认：
+
+```bash
+# 读取 skill 版本号
+VERSION=$(grep "^version:" /home/gql/.hermes/profiles/qa/skills/gql-qa/SKILL.md | cut -d: -f2 | tr -d ' ')
+```
+
+> **命令详见**：[references/commands.md#qa-已就绪](references/commands.md#qa-已就绪)
+
+### 步骤 0：开始工作（回复请求方）
+
+收到测试请求后，**必须立即**回复请求方：
+
+> **命令详见**：[references/commands.md#qa-开始工作](references/commands.md#qa-开始工作)
+
+---
+
+## 测试流程
+
+> 详见：[references/test-flow.md](references/test-flow.md)
+
+---
+
+## QA 独立原则
+
+qa 必须独立于 coder 和 review，不受其他角色影响：
+
+### 独立测试
+
+| 原则 | 说明 |
+|------|------|
+| **独立执行** | qa 独立执行测试，不受 coder 影响 |
+| **客观判断** | 基于测试结果判断，不因其他因素改变 |
+| **不受干扰** | coder 不得影响 qa 的测试结论 |
+| **同等标准** | 对所有代码一视同仁 |
+
+### Review 分析
+
+qa 加载 Review 报告后，分析：
+
+| 分析项 | 说明 |
+|--------|------|
+| 评审结论 | Approved / Pass with Risk / Changes Requested |
+| 问题列表 | review 发现的问题 |
+| QA 指南 | review 提供的测试建议 |
+| 风险区域 | review 指出的高风险区域 |
+
+### 上下文分析
+
+qa 加载上下文后，分析：
+
+| 分析项 | 说明 |
+|--------|------|
+| 功能范围 | 本次测试涉及哪些功能 |
+| 需求列表 | 功能对应的需求是什么 |
+| 测试重点 | 需要重点测试的区域 |
+| 风险区域 | 高风险功能需要详细测试 |
+
+---
+
+> **重要**：所有测试完成后必须执行通知，未通过测试时更要及时通知。
+
+---
+
+## 状态更新
+
+### 统一状态文件 Schema
+
+qa 维护状态文件 `{{PROJECT_DIR}}/.qa-state.json`：
+
+```json
+{
+  "schema_version": "1.0",
+  "role": "qa",
+  "current_task": {
+    "task_id": "T-001",
+    "status": "in_progress",
+    "started_at": "2026-05-18T10:00:00Z",
+    "updated_at": "2026-05-18T10:30:00Z"
+  },
+  "workspace": "/path/to/workspace",
+  "statistics": {
+    "total_tests": 100,
+    "passed": 90,
+    "failed": 5,
+    "blocked": 0,
+    "skipped": 5
+  },
+  "role_specific": {
+    "test_suite_status": "in_progress",
+    "coverage": {
+      "code": 80,
+      "requirements": 100,
+      "branches": 75
+    }
+  },
+  "last_updated": "2026-05-18T10:30:00Z"
+}
 ```
 
 ---
 
-## 📋 技能地图
+## 与其他角色协作
 
-| Skill | TL;DR | 级别 | 触发关键词 |
-|-------|-------|------|-----------|
-| bmad-qa | QA 评审核心：Sprint 测试评审、缺陷报告 | P0 | 评审、Sprint、计划、缺陷报告 |
-| webapp-testing | Playwright E2E：页面测试、contact、nav | P0 | Web、E2E、页面测试、contact |
-| verification-before-completion | QA 铁律：完成前必须验证 | P0 | 完成、通过、验证、确保 |
-| playwright-cli | CLI 工具：截图、DOM、cookie、route | P0 | 打不开、截图、调试 |
-| test-automator | 测试自动化：TDD/BDD、AI 测试 | P0 | 自动化、写测试、TDD |
-| performance-engineer | 性能测试：k6/JMeter、Core Web Vitals | P1 | 性能、负载、压测、LCP |
-| api-documenter | API 文档：OpenAPI、Swagger | P1 | API、接口、文档、OpenAPI |
-| test-runner | 自动测试：PostToolUse 事件触发 | P1 | 代码改、commit、变更 |
-| api-mock | Mock 服务器：FastAPI、场景管理 | P2 | Mock、模拟、stub |
-| run-tests-after-changes | Git Hooks：编辑后自动测试 | P2 | 代码改、编辑后测试 |
+### 通知 sm：测试完成
+
+> **命令详见**：[references/commands.md#qa-通知sm](references/commands.md#qa-通知sm)
+
+### 通知 coder：发现缺陷
+
+> **命令详见**：[references/commands.md#qa-通知coder](references/commands.md#qa-通知coder)
+
+### 通知 leader：测试完成
+
+> **命令详见**：[references/commands.md#qa-通知leader](references/commands.md#qa-通知leader)
+
+### 通知 leader：发现 P0 缺陷
+
+> **命令详见**：[references/commands.md#qa-p0通知](references/commands.md#qa-p0通知)
+
+### Bug 报告规范
+
+qa 发现缺陷时，必须报告给：
+
+| 报告对象 | 报告内容 | 时机 |
+|---------|---------|------|
+| **sm** | 缺陷详情 | 发现后立即 |
+| **coder** | 缺陷详情 + 复现步骤 | 发现后立即 |
+| **leader** | P0/P1 缺陷摘要 | 发现后立即 |
+
+
+## 测试类型与规则
+
+> 详见：[references/scope.md](references/scope.md)
 
 ---
 
-## 🎯 场景化深度参考（4大场景）
+## 帮助命令
 
-### 场景 1: Web E2E 测试 🔍
+- `qa status`：查看当前测试状态
+- `qa list`：查看待测试列表
+- `qa report`：查看测试报告
+- `qa coverage`：查看测试覆盖率
 
-```
-需求：测试 contact 区块
-    │
-    ├─ 快速调试/截图
-    │   └─ playwright-cli
-    │         → page.screenshot()
-    │         → page.locator().click()
-    │
-    └─ 完整 E2E 测试
-        └─ webapp-testing
-              → page.wait_for_load_state('networkidle')
-              → 页面交互
-              → 断言验证
-```
+---
 
-### 场景 2: API 测试 🔧
+## 语言规则
 
-```
-需求：验证 API 文档并测试
-    │
-    ├─ 文档验证
-    │   └─ api-documenter
-    │         → OpenAPI 3.1+
-    │         → Swagger 验证
-    │
-    └─ Mock 测试
-        └─ api-mock
-              → FastAPI Mock
-              → 场景管理
-              → 前后端并行开发
-```
+- **语言匹配**：输出语言与输入语言一致（中文输入 → 中文文档，英文输入 → 英文文档）
+- **技术术语**：保持技术术语（API、E2E、CI/CD、Mock 等）英文不变，只翻译说明性文字
 
-### 场景 3: 性能测试 ⚡
+---
 
-```
-需求：做性能测试
-    │
-    └─ performance-engineer
-          ├─ 负载测试
-          │     → k6/JMeter
-          │     → TPS/VUS
-          │
-          ├─ Core Web Vitals
-          │     → LCP（加载性能）
-          │     → FID（交互性）
-          │     → CLS（视觉稳定性）
-          │
-          └─ 响应时间分析
-                → TTFB
-                → 包大小
-```
+## 检查清单
 
-### 场景 4: 自动化测试 🤖
+### 每日检查
+
+- [ ] 检查是否有新测试任务
+- [ ] 检查阻塞任务
+- [ ] `hermes kanban list` 查看当前任务状态
+
+### 测试检查
+
+- [ ] 功能测试
+- [ ] 集成测试
+- [ ] 回归测试
+- [ ] 缺陷验证
+
+---
+
+## 任务归属与依赖
+
+### QA 负责的任务
+
+| 任务 | 创建者 | 依赖方 |
+|------|--------|--------|
+| 测试执行 | review | leader |
+| 缺陷报告 | qa | coder |
+| P0 缺陷上报 | qa | leader |
+
+### 任务依赖链
 
 ```
-需求：写自动化测试
-    │
-    └─ test-automator
-          ├─ TDD 流程
-          │     → 先写测试
-          │     → 再写代码
-          │
-          ├─ BDD 流程
-          │     → Given-When-Then
-          │     → 业务场景
-          │
-          └─ AI 自愈
-                → 智能重试
-                → 元素定位修复
+review 通过 → qa 测试
+    ↓
+qa 通过 → leader
+    ↓
+qa 发现缺陷 → coder 修复 → qa 复验
+    ↓
+qa 发现 P0 → leader 决策
 ```
 
-### 快速决策速查
+### 建立依赖命令
 
-```
-┌────────────────────────────────────────────────────────────┐
-│  场景              │  路由顺序                              │
-├────────────────────────────────────────────────────────────┤
-│  Web E2E 测试       │  webapp-testing + playwright-cli     │
-│  快速调试/截图      │  playwright-cli                      │
-│  API 文档验证       │  api-documenter + api-mock           │
-│  性能测试           │  performance-engineer                 │
-│  自动化测试规划     │  test-automator                      │
-│  完成前验证         │  verification-before-completion      │
-│  Mock API           │  api-mock                           │
-│  自动触发测试       │  test-runner + run-tests-after-changes│
-│  Sprint/评审        │  bmad-qa                            │
-│  安全测试           │  review-ext-skill (frontend-sec)    │
-│  未知任务           │  bmad-qa + 询问澄清                 │
-└────────────────────────────────────────────────────────────┘
+```bash
+# 建立依赖：qa → leader
+hermes kanban link <qa-task-id> <leader-task-id>
 ```
 
 ---
 
-## ❓ Fallback 处理
+## 角色日志
 
-当任务**无法匹配**以上任何规则时：
+### 记录开始
 
-```
-未知任务
-    │
-    ├─ 询问用户澄清：
-    │   "这个任务是 Web 测试、API 测试、性能测试、还是自动化测试？"
-    │
-    └─ 如果用户无法描述：
-        └─→ bmad-qa（让 QA 核心帮你判断）
-```
+当角色开始工作时，执行：
 
----
-
-## 🔗 任务组合流
-
-### 组合 1: 完整 Web 测试
-
-```
-"测试 Web 页面"
-    │
-    ├─ playwright-cli（快速调试）
-    │     → 截图定位问题
-    │
-    └─ webapp-testing（完整 E2E）
-          → 完整交互测试
-          → 断言验证
+```bash
+PROJECT=$(readlink $GQL_BOTS_HOME/projects/current 2>/dev/null | xargs basename 2>/dev/null || echo "")
+if [ -n "$PROJECT" ]; then
+  LOG_FILE=$GQL_BOTS_HOME/projects/$PROJECT/logs/qa.log
+  mkdir -p $GQL_BOTS_HOME/projects/$PROJECT/logs
+  echo "=== $(date) ===" >> $LOG_FILE
+  echo "[角色] qa" >> $LOG_FILE
+  echo "[任务] 测试验证" >> $LOG_FILE
+  echo "[Gate] #4" >> $LOG_FILE
+  echo "[状态] 开始执行" >> $LOG_FILE
+  echo "---" >> $LOG_FILE
+fi
 ```
 
-### 组合 2: API 验证 + Mock
+### 记录结束
 
-```
-"验证 API 并测试"
-    │
-    ├─ api-documenter（验证文档）
-    │     → OpenAPI 规范
-    │
-    └─ api-mock（Mock 测试）
-          → 创建 Mock
-          → 场景测试
-```
+当角色完成任务时，执行：
 
-### 组合 3: 性能 + 自动化
-
-```
-"做性能测试并自动化"
-    │
-    ├─ performance-engineer（性能）
-    │     → 负载测试
-    │     → Core Web Vitals
-    │
-    └─ test-automator（自动化）
-          → 性能回归测试
-          → CI/CD 集成
+```bash
+PROJECT=$(readlink $GQL_BOTS_HOME/projects/current 2>/dev/null | xargs basename 2>/dev/null || echo "")
+if [ -n "$PROJECT" ]; then
+  LOG_FILE=$GQL_BOTS_HOME/projects/$PROJECT/logs/qa.log
+  echo "[状态] 结束" >> $LOG_FILE
+  echo "---" >> $LOG_FILE
+fi
 ```
 
 ---
 
-## 🔗 与 gql-qa 主 skill 联动
+## Sprint 复盘
 
-**注意**：`qa-ext-skill` 不会覆盖 `gql-qa` 主 skill，它们协同工作。
+> 总升级方案 22 章定义。Sprint 完成后进行复盘，持续改进。
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│  gql-qa 主 skill                                           │
-│    │                                                        │
-│    ├─ 通用 QA 任务 → qa-ext-skill（路由）                  │
-│    │              └─→ 具体 skill 执行                         │
-│    │                                                        │
-│    └─ 特定技能任务 → 直接调用具体 skill                       │
-└─────────────────────────────────────────────────────────────┘
-```
+### 复盘参与
 
-**何时使用 qa-ext-skill**：
-- 任务模糊，需要判断用哪个 skill
-- 复杂任务需要多 skill 组合
-- 不确定某个 skill 是否适用
+qa 必须参与 Sprint 复盘：
+- 准备本 Sprint 的测试总结
+- 分享测试中发现的主要问题
+- 提出质量改进建议
 
-**何时直接调用具体 skill**：
-- 任务明确，比如"测试 contact 区块"
-- 已确定需要哪个 skill
-- 只需要单个 skill
+### 复盘流程
+
+| 步骤 | 说明 |
+|------|------|
+| 1. 准备测试总结 | 汇总本 Sprint 的测试结果、缺陷统计 |
+| 2. 参与复盘会议 | 与 sm、coder、review 一起复盘 |
+| 3. 记录改进建议 | 提出测试流程、质量改进建议 |
+| 4. 更新测试规范 | 根据复盘结论更新测试规范 |
 
 ---
 
-## 📖 References 快速索引
+## Kanban 操作规范
 
-详见 `references/quick-reference.md`（自然语言示例 + Fallback + 组合流）
-
-每个 skill 文件都有 TL;DR 摘要：
-
-| Skill | TL;DR | 说明 |
-|-------|-------|------|
-| bmad-qa.md | QA 评审核心 | Sprint、缺陷报告 |
-| webapp-testing.md | Playwright E2E | 页面测试 |
-| verification-before-completion.md | QA 铁律 | 验证优先 |
-| playwright-cli.md | CLI 工具 | 截图、DOM |
-| test-automator.md | 测试自动化 | TDD/BDD |
-| performance-engineer.md | 性能测试 | k6、Core Web Vitals |
-| api-documenter.md | API 文档 | OpenAPI |
-| test-runner.md | 自动测试 | 事件触发 |
-| api-mock.md | Mock 服务器 | FastAPI |
-| run-tests-after-changes.md | Git Hooks | 编辑后测试 |
-
----
-
-## 🚨 常见错误
-
-| 错误 | 正确做法 |
-|------|---------|
-| 直接说"测试" | 说明测试什么（Web？API？性能？） |
-| 不验证就 claim 完成 | 先 `verification-before-completion` |
-| Web 测试前不等待 networkidle | `page.wait_for_load_state('networkidle')` |
-| API 测试不验证 OpenAPI | 用 `api-documenter` 先验证文档 |
-| 忘记 Fallback | 无法匹配时 → bmad-qa |
-
----
-
-## 🔗 相关角色联动
-
-| 角色 | 协作场景 |
-|------|---------|
-| **coder** | 代码开发：coder-ext-skill 写代码 → qa-ext-skill 验证 |
-| **review** | 安全测试：review-ext-skill 做安全审计 → qa-ext-skill 验证 |
-| **arc** | 架构评审：arc-ext-skill 设计 → qa-ext-skill 评审可测试性 |
-| **sm** | Sprint 规划：sm-ext-skill 规划 → qa-ext-skill 评审测试策略 |
-
----
-
-## 🗣️ 示例对话
-
-### 示例 1: 路由到 webapp-testing
-
-```
-用户：测试 contact 区块
-AI：分析：包含"contact"、"区块"
-     路由到 webapp-testing
-     执行：Playwright E2E 测试
-```
-
-### 示例 2: 路由到 api-mock
-
-```
-用户：Mock 一个登录 API
-AI：分析：包含"Mock"、"登录"
-     路由到 api-mock
-     执行：FastAPI Mock 服务器
-```
-
-### 示例 3: Fallback 处理
-
-```
-用户：帮我测试一下
-AI：分析：包含"测试"
-     但无法确定具体类型
-     Fallback → bmad-qa
-     执行：QA 核心判断任务类型
-     反馈：这个任务是"Web E2E 测试"，建议用 webapp-testing
-```
-
----
-
-## 升级说明
-
-查看 [update_readme.md](update_readme.md) 了解如何同步最新 skill。
-
-当前版本：v2.0.0
+> 基于 docs/06-Kanban通信设计.md v3.6
+> **完整命令详见**：[references/commands.md](references/commands.md)
