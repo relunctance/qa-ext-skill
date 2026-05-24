@@ -122,7 +122,7 @@ hermes -p qa -s verification-before-completion -q "确保所有测试通过"
 cd /home/gql/repos/qa-ext-skill
 
 # 执行同步脚本
-bash sync-to-hermes.sh qa
+python sync_to_hermes.py qa
 ```
 
 同步后目录结构：

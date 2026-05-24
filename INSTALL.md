@@ -14,7 +14,7 @@
 cd /home/gql/repos/qa-ext-skill
 
 # 执行同步脚本
-bash sync-to-hermes.sh qa
+python sync_to_hermes.py qa
 ```
 
 ### 方式 2：手动安装
@@ -27,7 +27,7 @@ git clone https://github.com/relunctance/qa-ext-skill.git ~/.hermes/profiles/qa/
 cd ~/.hermes/profiles/qa/skills/qa-ext-skill
 
 # 3. 执行同步
-bash sync-to-hermes.sh qa
+python sync_to_hermes.py qa
 ```
 
 ## 验证安装
@@ -80,7 +80,7 @@ MODE_CONFIG: full_auto  # full_auto | semi_auto
 ```bash
 cd /home/gql/repos/qa-ext-skill
 git pull
-bash sync-to-hermes.sh qa
+python sync_to_hermes.py qa
 ```
 
 ## 卸载
